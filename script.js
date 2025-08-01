@@ -99,6 +99,16 @@ class TaskManager {
         this.populateAuthorFilter();
     }
 
+    handleDeleteTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (task) {
+            const confirmed = confirm(`Are you sure you want to delete the task "${task.title}"?`);
+            if (confirmed) {
+                this.deleteTask(taskId);
+            }
+        }
+    }
+
     // Rendering Methods
     renderTasks() {
         const taskLists = {
@@ -150,6 +160,9 @@ class TaskManager {
         const fileCount = task.files ? task.files.length : 0;
 
         card.innerHTML = `
+            <button class="task-delete-btn" title="Delete task">
+                <i class="fas fa-times"></i>
+            </button>
             <div class="task-header">
                 <h3 class="task-title">${this.escapeHtml(task.title)}</h3>
                 <span class="task-priority priority-${task.priority}">${task.priority}</span>
@@ -169,6 +182,13 @@ class TaskManager {
                 </div>
             ` : ''}
         `;
+
+        // Add delete button event listener
+        const deleteBtn = card.querySelector('.task-delete-btn');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent opening task details
+            this.handleDeleteTask(task.id);
+        });
 
         return card;
     }
@@ -368,13 +388,22 @@ class TaskManager {
                         <h3>Attachments (${task.files.length})</h3>
                         <div class="attachment-list">
                             ${task.files.map(file => `
-                                <div class="attachment-item" onclick="taskManager.downloadFile('${file.data}', '${file.name}')">
+                                <div class="attachment-item">
                                     <i class="${this.getFileIcon(file.type)}"></i>
                                     <div class="attachment-info">
                                         <div class="attachment-name">${this.escapeHtml(file.name)}</div>
                                         <div class="attachment-size">${this.formatFileSize(file.size)}</div>
                                     </div>
-                                    <i class="fas fa-download"></i>
+                                    <div class="attachment-actions">
+                                        ${this.isImageFile(file.type) ? `
+                                            <button class="btn-secondary" onclick="taskManager.viewImage('${file.data}', '${file.name}')" title="View Image">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        ` : ''}
+                                        <button class="btn-secondary" onclick="taskManager.downloadFile('${file.data}', '${file.name}')" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -393,6 +422,43 @@ class TaskManager {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    viewImage(dataUrl, filename) {
+        // Create a modal for image viewing
+        const imageModal = document.createElement('div');
+        imageModal.className = 'modal show';
+        imageModal.innerHTML = `
+            <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+                <div class="modal-header">
+                    <h2>${this.escapeHtml(filename)}</h2>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="text-align: center; padding: 20px;">
+                    <img src="${dataUrl}" alt="${this.escapeHtml(filename)}" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+                    <div style="margin-top: 20px;">
+                        <button class="btn-primary" onclick="taskManager.downloadFile('${dataUrl}', '${filename}')">
+                            <i class="fas fa-download"></i> Download Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(imageModal);
+        
+        // Close modal when clicking outside
+        imageModal.addEventListener('click', (e) => {
+            if (e.target === imageModal) {
+                imageModal.remove();
+            }
+        });
+    }
+
+    isImageFile(mimeType) {
+        return mimeType && mimeType.startsWith('image/');
     }
 
     // Modal Management

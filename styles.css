@@ -7,22 +7,22 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
-    color: #323130;
+    background-color: #1a1a1a;
+    color: #e0e0e0;
     line-height: 1.5;
     overflow-x: hidden;
 }
 
 /* Header Styles */
 .header {
-    background-color: #0078d4;
+    background-color: #2d2d2d;
     color: white;
     padding: 0 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 60px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     position: fixed;
     top: 0;
     left: 0;
@@ -64,9 +64,9 @@ body {
 
 .nav-item:hover,
 .nav-item.active {
-    color: white;
-    border-bottom-color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: #4fc3f7;
+    border-bottom-color: #4fc3f7;
+    background-color: rgba(79, 195, 247, 0.1);
 }
 
 .header-right {
@@ -88,8 +88,8 @@ body {
 
 /* Button Styles */
 .btn-primary {
-    background-color: #106ebe;
-    color: white;
+    background-color: #4fc3f7;
+    color: #1a1a1a;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -103,13 +103,13 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #005a9e;
+    background-color: #29b6f6;
 }
 
 .btn-secondary {
-    background-color: transparent;
-    color: #323130;
-    border: 1px solid #d1d1d1;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border: 1px solid #555;
     padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
@@ -119,8 +119,8 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: #f3f2f1;
-    border-color: #c8c6c4;
+    background-color: #4a4a4a;
+    border-color: #666;
 }
 
 /* Sidebar Styles */
@@ -130,8 +130,8 @@ body {
     top: 60px;
     width: 280px;
     height: calc(100vh - 60px);
-    background-color: white;
-    border-right: 1px solid #e1dfdd;
+    background-color: #2d2d2d;
+    border-right: 1px solid #444;
     padding: 20px;
     overflow-y: auto;
     z-index: 100;
@@ -144,7 +144,7 @@ body {
 .sidebar-section h3 {
     font-size: 14px;
     font-weight: 600;
-    color: #605e5c;
+    color: #b0b0b0;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -155,14 +155,14 @@ body {
     align-items: center;
     gap: 10px;
     padding: 12px;
-    background-color: #f8f9fa;
+    background-color: #3a3a3a;
     border-radius: 4px;
-    color: #323130;
+    color: #e0e0e0;
     font-weight: 500;
 }
 
 .project-info i {
-    color: #0078d4;
+    color: #4fc3f7;
     font-size: 16px;
 }
 
@@ -179,19 +179,19 @@ body {
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    color: #323130;
+    color: #e0e0e0;
     text-decoration: none;
     border-radius: 4px;
     transition: background-color 0.3s ease;
 }
 
 .sidebar-menu a:hover {
-    background-color: #f3f2f1;
+    background-color: #3a3a3a;
 }
 
 .sidebar-menu i {
     width: 16px;
-    color: #605e5c;
+    color: #b0b0b0;
 }
 
 /* Main Content Styles */
@@ -212,7 +212,7 @@ body {
 .content-header h1 {
     font-size: 28px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
 }
 
 .board-controls {
@@ -230,30 +230,33 @@ body {
 .search-box i {
     position: absolute;
     left: 12px;
-    color: #605e5c;
+    color: #b0b0b0;
     font-size: 14px;
 }
 
 .search-box input {
     padding: 8px 12px 8px 35px;
-    border: 1px solid #d1d1d1;
+    border: 1px solid #555;
     border-radius: 4px;
     font-size: 14px;
     width: 250px;
     transition: border-color 0.3s ease;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
 }
 
 .search-box input:focus {
     outline: none;
-    border-color: #0078d4;
+    border-color: #4fc3f7;
 }
 
 .filter-select {
     padding: 8px 12px;
-    border: 1px solid #d1d1d1;
+    border: 1px solid #555;
     border-radius: 4px;
     font-size: 14px;
-    background-color: white;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
     cursor: pointer;
 }
 
@@ -266,9 +269,9 @@ body {
 }
 
 .kanban-column {
-    background-color: white;
+    background-color: #2d2d2d;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -276,8 +279,8 @@ body {
 
 .column-header {
     padding: 16px 20px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e1dfdd;
+    background-color: #3a3a3a;
+    border-bottom: 1px solid #444;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -286,18 +289,18 @@ body {
 .column-header h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .column-header i {
-    color: #0078d4;
+    color: #4fc3f7;
 }
 
 .task-count {
-    background-color: #0078d4;
+    background-color: #4fc3f7;
     color: white;
     padding: 4px 8px;
     border-radius: 12px;
@@ -316,19 +319,20 @@ body {
 
 /* Task Card Styles */
 .task-card {
-    background-color: white;
-    border: 1px solid #e1dfdd;
+    background-color: #3a3a3a;
+    border: 1px solid #555;
     border-radius: 6px;
     padding: 16px;
     margin-bottom: 12px;
     cursor: grab;
     transition: all 0.3s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .task-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
+    border-color: #4fc3f7;
 }
 
 .task-card.dragging {
@@ -347,7 +351,7 @@ body {
 .task-title {
     font-size: 16px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
     margin: 0;
     line-height: 1.3;
     flex: 1;
@@ -384,7 +388,7 @@ body {
 }
 
 .task-description {
-    color: #605e5c;
+    color: #b0b0b0;
     font-size: 14px;
     margin-bottom: 12px;
     line-height: 1.4;
@@ -426,7 +430,38 @@ body {
 }
 
 .task-attachments i {
-    color: #0078d4;
+    color: #4fc3f7;
+}
+
+/* Task Delete Button */
+.task-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.task-delete-btn:hover {
+    color: #ff4444;
+    background-color: rgba(255, 68, 68, 0.1);
+    opacity: 1;
+}
+
+.task-card {
+    position: relative;
+}
+
+.task-card:hover .task-delete-btn {
+    opacity: 1;
 }
 
 /* Modal Styles */
@@ -449,19 +484,19 @@ body {
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #2d2d2d;
     border-radius: 8px;
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     animation: slideIn 0.3s ease;
 }
 
 .modal-header {
     padding: 20px 24px;
-    border-bottom: 1px solid #e1dfdd;
+    border-bottom: 1px solid #444;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -470,7 +505,7 @@ body {
 .modal-header h2 {
     font-size: 20px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
     margin: 0;
 }
 
@@ -478,7 +513,7 @@ body {
     background: none;
     border: none;
     font-size: 18px;
-    color: #605e5c;
+    color: #b0b0b0;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -486,7 +521,7 @@ body {
 }
 
 .modal-close:hover {
-    background-color: #f3f2f1;
+    background-color: #3a3a3a;
 }
 
 .modal-body {
@@ -495,7 +530,7 @@ body {
 
 .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid #e1dfdd;
+    border-top: 1px solid #444;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -510,7 +545,7 @@ body {
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
     margin-bottom: 6px;
 }
 
@@ -519,18 +554,20 @@ body {
 .form-group select {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #d1d1d1;
+    border: 1px solid #555;
     border-radius: 4px;
     font-size: 14px;
     font-family: inherit;
     transition: border-color 0.3s ease;
+    background-color: #3a3a3a;
+    color: #e0e0e0;
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #0078d4;
+    border-color: #4fc3f7;
 }
 
 .form-group textarea {
@@ -540,40 +577,40 @@ body {
 
 /* File Upload Styles */
 .file-upload-area {
-    border: 2px dashed #d1d1d1;
+    border: 2px dashed #555;
     border-radius: 6px;
     padding: 40px 20px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background-color: #fafafa;
+    background-color: #3a3a3a;
 }
 
 .file-upload-area:hover {
-    border-color: #0078d4;
-    background-color: #f8f9fa;
+    border-color: #4fc3f7;
+    background-color: #4a4a4a;
 }
 
 .file-upload-area.dragover {
-    border-color: #0078d4;
-    background-color: #e3f2fd;
+    border-color: #4fc3f7;
+    background-color: rgba(79, 195, 247, 0.1);
 }
 
 .file-upload-area i {
     font-size: 32px;
-    color: #0078d4;
+    color: #4fc3f7;
     margin-bottom: 12px;
 }
 
 .file-upload-area p {
     margin: 8px 0;
-    color: #323130;
+    color: #e0e0e0;
     font-weight: 500;
 }
 
 .file-types {
     font-size: 12px;
-    color: #605e5c !important;
+    color: #b0b0b0 !important;
     font-weight: 400 !important;
 }
 
@@ -586,7 +623,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 12px;
-    background-color: #f8f9fa;
+    background-color: #3a3a3a;
     border-radius: 4px;
     margin-bottom: 8px;
 }
@@ -599,18 +636,18 @@ body {
 }
 
 .file-info i {
-    color: #0078d4;
+    color: #4fc3f7;
     font-size: 16px;
 }
 
 .file-name {
     font-weight: 500;
-    color: #323130;
+    color: #e0e0e0;
 }
 
 .file-size {
     font-size: 12px;
-    color: #605e5c;
+    color: #b0b0b0;
     margin-left: 8px;
 }
 
@@ -710,7 +747,7 @@ body {
 
 .task-detail-section {
     padding: 20px 0;
-    border-bottom: 1px solid #e1dfdd;
+    border-bottom: 1px solid #444;
 }
 
 .task-detail-section:last-child {
@@ -720,7 +757,7 @@ body {
 .task-detail-section h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #323130;
+    color: #e0e0e0;
     margin-bottom: 12px;
 }
 
@@ -735,18 +772,18 @@ body {
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background-color: #f8f9fa;
+    background-color: #3a3a3a;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .attachment-item:hover {
-    background-color: #f3f2f1;
+    background-color: #4a4a4a;
 }
 
 .attachment-item i {
-    color: #0078d4;
+    color: #4fc3f7;
     font-size: 16px;
 }
 
@@ -756,13 +793,25 @@ body {
 
 .attachment-name {
     font-weight: 500;
-    color: #323130;
+    color: #e0e0e0;
     font-size: 14px;
 }
 
 .attachment-size {
     font-size: 12px;
-    color: #605e5c;
+    color: #b0b0b0;
+}
+
+.attachment-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.attachment-actions .btn-secondary {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: auto;
 }
 
 /* Empty State */
