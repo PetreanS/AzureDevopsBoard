@@ -4,6 +4,8 @@ class TaskManager {
         this.tasks = this.loadTasks();
         this.draggedTask = null;
         this.selectedFiles = [];
+        this.editingTask = null;
+        this.editSelectedFiles = [];
         this.init();
     }
 
@@ -12,6 +14,7 @@ class TaskManager {
         this.renderTasks();
         this.updateTaskCounts();
         this.populateAuthorFilter();
+        this.populateMonthFilter();
     }
 
     setupEventListeners() {
@@ -29,7 +32,28 @@ class TaskManager {
 
         // Search and filter events
         document.getElementById('searchInput').addEventListener('input', (e) => this.filterTasks());
+        document.getElementById('filterMonth').addEventListener('change', (e) => this.filterTasks());
         document.getElementById('filterAuthor').addEventListener('change', (e) => this.filterTasks());
+
+        // Archive events
+        document.getElementById('archiveSearchInput').addEventListener('input', (e) => this.filterArchive());
+        document.getElementById('archiveMonthFilter').addEventListener('change', (e) => this.filterArchive());
+        document.getElementById('archiveAuthorFilter').addEventListener('change', (e) => this.filterArchive());
+
+        // Edit task events
+        document.getElementById('editTaskForm').addEventListener('submit', (e) => this.handleEditTaskSubmit(e));
+        
+        // Edit file upload events
+        const editFileInput = document.getElementById('editTaskFiles');
+        const editFileUploadArea = document.querySelector('#editTaskModal .file-upload-area');
+        
+        editFileInput.addEventListener('change', (e) => this.handleEditFileSelect(e));
+        editFileUploadArea.addEventListener('dragover', (e) => this.handleEditDragOver(e));
+        editFileUploadArea.addEventListener('dragleave', (e) => this.handleEditDragLeave(e));
+        editFileUploadArea.addEventListener('drop', (e) => this.handleEditFileDrop(e));
+
+        // User tasks events
+        document.getElementById('userSelect').addEventListener('change', (e) => this.handleUserSelect(e));
 
         // Drag and drop for task lists
         this.setupDragAndDrop();
@@ -317,6 +341,7 @@ class TaskManager {
     // Filter and Search
     getFilteredTasks() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const monthFilter = document.getElementById('filterMonth').value;
         const authorFilter = document.getElementById('filterAuthor').value;
 
         return this.tasks.filter(task => {
@@ -325,15 +350,20 @@ class TaskManager {
                 task.description.toLowerCase().includes(searchTerm) ||
                 task.author.toLowerCase().includes(searchTerm);
 
+            const matchesMonth = !monthFilter || this.getMonthYear(task.createdAt) === monthFilter;
             const matchesAuthor = !authorFilter || task.author === authorFilter;
 
-            return matchesSearch && matchesAuthor;
+            return matchesSearch && matchesMonth && matchesAuthor;
         });
     }
 
     filterTasks() {
         this.renderTasks();
         this.updateTaskCounts();
+    }
+
+    filterArchive() {
+        this.renderArchive();
     }
 
     populateAuthorFilter() {
@@ -352,12 +382,40 @@ class TaskManager {
         });
     }
 
+    populateMonthFilter() {
+        const monthFilter = document.getElementById('filterMonth');
+        const currentValue = monthFilter.value;
+        
+        const months = [...new Set(this.tasks.map(task => this.getMonthYear(task.createdAt)))].sort();
+        
+        monthFilter.innerHTML = '<option value="">All Months</option>';
+        months.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            option.textContent = month;
+            if (month === currentValue) option.selected = true;
+            monthFilter.appendChild(option);
+        });
+    }
+
+    getMonthYear(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    }
+
+    getMonthYearKey(dateString) {
+        const date = new Date(dateString);
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
     // Task Details Modal
     showTaskDetails(task) {
         const modal = document.getElementById('taskDetailModal');
         const title = document.getElementById('taskDetailTitle');
         const content = document.getElementById('taskDetailContent');
 
+        // Set the task being edited
+        this.editingTask = task;
         title.textContent = task.title;
 
         const formattedDate = new Date(task.createdAt).toLocaleDateString('en-US', {
@@ -459,6 +517,505 @@ class TaskManager {
 
     isImageFile(mimeType) {
         return mimeType && mimeType.startsWith('image/');
+    }
+
+    // Archive Methods
+    openArchiveModal() {
+        this.populateArchiveFilters();
+        this.renderArchive();
+        document.getElementById('archiveModal').classList.add('show');
+    }
+
+    closeArchiveModal() {
+        this.closeModal(document.getElementById('archiveModal'));
+    }
+
+    populateArchiveFilters() {
+        // Populate month filter for archive
+        const archiveMonthFilter = document.getElementById('archiveMonthFilter');
+        const archiveAuthorFilter = document.getElementById('archiveAuthorFilter');
+        
+        const allTasks = [...this.tasks, ...this.getArchivedTasks()];
+        const months = [...new Set(allTasks.map(task => this.getMonthYear(task.createdAt)))].sort();
+        const authors = [...new Set(allTasks.map(task => task.author))].sort();
+        
+        archiveMonthFilter.innerHTML = '<option value="">All Months</option>';
+        months.forEach(month => {
+            const option = document.createElement('option');
+            option.value = month;
+            option.textContent = month;
+            archiveMonthFilter.appendChild(option);
+        });
+        
+        archiveAuthorFilter.innerHTML = '<option value="">All Authors</option>';
+        authors.forEach(author => {
+            const option = document.createElement('option');
+            option.value = author;
+            option.textContent = author;
+            archiveAuthorFilter.appendChild(option);
+        });
+    }
+
+    renderArchive() {
+        const archiveContent = document.getElementById('archiveContent');
+        const searchTerm = document.getElementById('archiveSearchInput').value.toLowerCase();
+        const monthFilter = document.getElementById('archiveMonthFilter').value;
+        const authorFilter = document.getElementById('archiveAuthorFilter').value;
+        
+        const allTasks = [...this.tasks, ...this.getArchivedTasks()];
+        
+        // Filter tasks
+        const filteredTasks = allTasks.filter(task => {
+            const matchesSearch = !searchTerm || 
+                task.title.toLowerCase().includes(searchTerm) ||
+                task.description.toLowerCase().includes(searchTerm) ||
+                task.author.toLowerCase().includes(searchTerm);
+            
+            const matchesMonth = !monthFilter || this.getMonthYear(task.createdAt) === monthFilter;
+            const matchesAuthor = !authorFilter || task.author === authorFilter;
+            
+            return matchesSearch && matchesMonth && matchesAuthor;
+        });
+        
+        if (filteredTasks.length === 0) {
+            archiveContent.innerHTML = `
+                <div class="archive-empty-state">
+                    <i class="fas fa-archive"></i>
+                    <h3>No archived tasks found</h3>
+                    <p>No tasks match your current filters</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Group tasks by month
+        const tasksByMonth = {};
+        filteredTasks.forEach(task => {
+            const monthKey = this.getMonthYearKey(task.createdAt);
+            if (!tasksByMonth[monthKey]) {
+                tasksByMonth[monthKey] = [];
+            }
+            tasksByMonth[monthKey].push(task);
+        });
+        
+        // Sort months (newest first)
+        const sortedMonths = Object.keys(tasksByMonth).sort().reverse();
+        
+        let archiveHTML = '';
+        sortedMonths.forEach(monthKey => {
+            const tasks = tasksByMonth[monthKey];
+            const monthName = this.getMonthYear(tasks[0].createdAt);
+            
+            archiveHTML += `
+                <div class="archive-month-section">
+                    <div class="archive-month-header">
+                        <h3>${monthName}</h3>
+                        <span class="archive-month-count">${tasks.length} task${tasks.length > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="archive-tasks-list">
+                        ${tasks.map(task => this.createArchiveTaskHTML(task)).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        archiveContent.innerHTML = archiveHTML;
+    }
+
+    createArchiveTaskHTML(task) {
+        const formattedDate = new Date(task.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const fileCount = task.files ? task.files.length : 0;
+        
+        return `
+            <div class="archive-task-item">
+                <div class="archive-task-header">
+                    <h4 class="archive-task-title">${this.escapeHtml(task.title)}</h4>
+                    <span class="archive-task-priority priority-${task.priority}">${task.priority}</span>
+                </div>
+                ${task.description ? `<div class="archive-task-description">${this.escapeHtml(task.description)}</div>` : ''}
+                <div class="archive-task-meta">
+                    <div class="archive-task-author">
+                        <i class="fas fa-user"></i>
+                        <span>${this.escapeHtml(task.author)}</span>
+                    </div>
+                    <div class="archive-task-date">${formattedDate}</div>
+                </div>
+                ${fileCount > 0 ? `
+                    <div class="task-attachments">
+                        <i class="fas fa-paperclip"></i>
+                        <span>${fileCount} attachment${fileCount > 1 ? 's' : ''}</span>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    getArchivedTasks() {
+        const archived = localStorage.getItem('azureDevOpsArchivedTasks');
+        return archived ? JSON.parse(archived) : [];
+    }
+
+    saveArchivedTasks(archivedTasks) {
+        localStorage.setItem('azureDevOpsArchivedTasks', JSON.stringify(archivedTasks));
+    }
+
+    archiveOldTasks() {
+        const currentDate = new Date();
+        const threeMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 3, 1);
+        
+        const tasksToArchive = this.tasks.filter(task => {
+            const taskDate = new Date(task.createdAt);
+            return taskDate < threeMonthsAgo;
+        });
+        
+        if (tasksToArchive.length > 0) {
+            const archivedTasks = this.getArchivedTasks();
+            archivedTasks.push(...tasksToArchive);
+            this.saveArchivedTasks(archivedTasks);
+            
+            // Remove archived tasks from current tasks
+            this.tasks = this.tasks.filter(task => !tasksToArchive.includes(task));
+            this.saveTasks();
+            this.renderTasks();
+            this.updateTaskCounts();
+            this.populateAuthorFilter();
+            this.populateMonthFilter();
+        }
+    }
+
+    // Task Editing Methods
+    openEditModal() {
+        if (!this.editingTask) return;
+        
+        const modal = document.getElementById('editTaskModal');
+        const form = document.getElementById('editTaskForm');
+        
+        // Populate form with current task data
+        document.getElementById('editTaskTitle').value = this.editingTask.title;
+        document.getElementById('editTaskDescription').value = this.editingTask.description || '';
+        document.getElementById('editTaskAuthor').value = this.editingTask.author;
+        document.getElementById('editTaskPriority').value = this.editingTask.priority;
+        
+        // Reset edit files
+        this.editSelectedFiles = [];
+        this.renderEditFileList();
+        
+        // Show current attachments
+        this.renderCurrentAttachments();
+        
+        modal.classList.add('show');
+    }
+
+    closeEditTaskModal() {
+        document.getElementById('editTaskModal').classList.remove('show');
+        this.editingTask = null;
+        this.editSelectedFiles = [];
+        this.resetEditForm();
+    }
+
+    resetEditForm() {
+        document.getElementById('editTaskForm').reset();
+        this.editSelectedFiles = [];
+        this.renderEditFileList();
+        document.getElementById('currentAttachments').innerHTML = '';
+    }
+
+    renderCurrentAttachments() {
+        const container = document.getElementById('currentAttachments');
+        
+        if (!this.editingTask.files || this.editingTask.files.length === 0) {
+            container.innerHTML = '<p style="color: #b0b0b0; font-style: italic;">No attachments</p>';
+            return;
+        }
+
+        container.innerHTML = this.editingTask.files.map((file, index) => `
+            <div class="current-attachment-item">
+                <div class="current-attachment-info">
+                    <i class="${this.getFileIcon(file.type)}"></i>
+                    <div class="current-attachment-details">
+                        <div class="current-attachment-name">${this.escapeHtml(file.name)}</div>
+                        <div class="current-attachment-size">${this.formatFileSize(file.size)}</div>
+                    </div>
+                </div>
+                <div class="current-attachment-actions">
+                    ${this.isImageFile(file.type) ? `
+                        <button class="btn-secondary" onclick="taskManager.viewImage('${file.data}', '${file.name}')" title="View Image">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    ` : ''}
+                    <button class="btn-secondary" onclick="taskManager.downloadFile('${file.data}', '${file.name}')" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="remove-attachment-btn" onclick="taskManager.removeCurrentAttachment(${index})" title="Remove">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    removeCurrentAttachment(index) {
+        if (this.editingTask && this.editingTask.files) {
+            this.editingTask.files.splice(index, 1);
+            this.renderCurrentAttachments();
+        }
+    }
+
+    handleEditFileSelect(e) {
+        const files = Array.from(e.target.files);
+        this.addEditFiles(files);
+    }
+
+    handleEditDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('dragover');
+    }
+
+    handleEditDragLeave(e) {
+        e.currentTarget.classList.remove('dragover');
+    }
+
+    handleEditFileDrop(e) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('dragover');
+        const files = Array.from(e.dataTransfer.files);
+        this.addEditFiles(files);
+    }
+
+    addEditFiles(files) {
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.editSelectedFiles.push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    data: e.target.result
+                });
+                this.renderEditFileList();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    removeEditFile(index) {
+        this.editSelectedFiles.splice(index, 1);
+        this.renderEditFileList();
+    }
+
+    renderEditFileList() {
+        const fileList = document.getElementById('editFileList');
+        
+        if (this.editSelectedFiles.length === 0) {
+            fileList.innerHTML = '';
+            return;
+        }
+
+        fileList.innerHTML = this.editSelectedFiles.map((file, index) => `
+            <div class="file-item">
+                <div class="file-info">
+                    <i class="${this.getFileIcon(file.type)}"></i>
+                    <div class="file-details">
+                        <div class="file-name">${this.escapeHtml(file.name)}</div>
+                        <div class="file-size">${this.formatFileSize(file.size)}</div>
+                    </div>
+                </div>
+                <button class="file-remove" onclick="taskManager.removeEditFile(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    handleEditTaskSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.editingTask) return;
+
+        const formData = new FormData(e.target);
+        
+        // Update task with new data
+        this.editingTask.title = formData.get('title');
+        this.editingTask.description = formData.get('description');
+        this.editingTask.author = formData.get('author');
+        this.editingTask.priority = formData.get('priority');
+        
+        // Add new files to existing files
+        if (this.editSelectedFiles.length > 0) {
+            if (!this.editingTask.files) {
+                this.editingTask.files = [];
+            }
+            this.editingTask.files.push(...this.editSelectedFiles);
+        }
+        
+        // Save and update
+        this.saveTasks();
+        this.renderTasks();
+        this.updateTaskCounts();
+        this.populateAuthorFilter();
+        
+        // Close modal and reset
+        this.closeEditTaskModal();
+        this.closeTaskDetailModal();
+        
+        // Show success message
+        this.showNotification('Task updated successfully!', 'success');
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            z-index: 3000;
+            animation: slideInRight 0.3s ease;
+            background-color: ${type === 'success' ? '#4caf50' : '#2196f3'};
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // User Tasks Methods
+    openUserTasksModal() {
+        document.getElementById('userTasksModal').classList.add('show');
+        this.populateUserSelect();
+    }
+
+    closeUserTasksModal() {
+        this.closeModal(document.getElementById('userTasksModal'));
+        document.getElementById('userSelect').value = '';
+        document.getElementById('userTasksContent').innerHTML = '';
+    }
+
+    populateUserSelect() {
+        const userSelect = document.getElementById('userSelect');
+        const users = [...new Set(this.tasks.map(task => task.author))].sort();
+        
+        // Clear existing options except the first one
+        userSelect.innerHTML = '<option value="">Choose a user...</option>';
+        
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            userSelect.appendChild(option);
+        });
+    }
+
+    handleUserSelect(e) {
+        const selectedUser = e.target.value;
+        if (selectedUser) {
+            this.renderUserTasks(selectedUser);
+        } else {
+            document.getElementById('userTasksContent').innerHTML = '';
+        }
+    }
+
+    renderUserTasks(user) {
+        const userTasks = this.tasks.filter(task => task.author === user);
+        const content = document.getElementById('userTasksContent');
+        
+        if (userTasks.length === 0) {
+            content.innerHTML = `
+                <div class="user-tasks-empty">
+                    <i class="fas fa-user-slash"></i>
+                    <h3>No tasks found</h3>
+                    <p>No tasks have been created by ${user} yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Group tasks by month
+        const tasksByMonth = {};
+        userTasks.forEach(task => {
+            const monthKey = this.getMonthYearKey(task.createdAt);
+            if (!tasksByMonth[monthKey]) {
+                tasksByMonth[monthKey] = [];
+            }
+            tasksByMonth[monthKey].push(task);
+        });
+
+        // Sort months in descending order (most recent first)
+        const sortedMonths = Object.keys(tasksByMonth).sort((a, b) => new Date(b) - new Date(a));
+
+        let html = '';
+        sortedMonths.forEach(monthKey => {
+            const tasks = tasksByMonth[monthKey];
+            const monthName = this.getMonthYear(monthKey);
+            
+            html += `
+                <div class="user-month-section">
+                    <div class="user-month-header">
+                        <h3>${monthName}</h3>
+                        <span class="user-month-count">${tasks.length} task${tasks.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <ul class="user-tasks-list">
+                        ${tasks.map(task => this.createUserTaskHTML(task)).join('')}
+                    </ul>
+                </div>
+            `;
+        });
+
+        content.innerHTML = html;
+    }
+
+    createUserTaskHTML(task) {
+        const priorityClass = `priority-${task.priority}`;
+        const statusIcon = this.getStatusIcon(task.status);
+        const statusText = this.capitalizeFirst(task.status);
+        const attachmentsCount = task.files ? task.files.length : 0;
+        
+        return `
+            <li class="user-task-item">
+                <div class="user-task-header">
+                    <h4 class="user-task-title">${this.escapeHtml(task.title)}</h4>
+                    <span class="user-task-priority ${priorityClass}">${task.priority}</span>
+                </div>
+                ${task.description ? `<div class="user-task-description">${this.escapeHtml(task.description)}</div>` : ''}
+                <div class="user-task-meta">
+                    <div class="user-task-status">
+                        <i class="${statusIcon}"></i>
+                        <span>${statusText}</span>
+                    </div>
+                    <div class="user-task-date">${new Date(task.createdAt).toLocaleDateString()}</div>
+                </div>
+                ${attachmentsCount > 0 ? `
+                    <div class="user-task-attachments">
+                        <i class="fas fa-paperclip"></i>
+                        <span>${attachmentsCount} attachment${attachmentsCount !== 1 ? 's' : ''}</span>
+                    </div>
+                ` : ''}
+            </li>
+        `;
+    }
+
+    getStatusIcon(status) {
+        const icons = {
+            'new': 'fas fa-inbox',
+            'ongoing': 'fas fa-play',
+            'paused': 'fas fa-pause',
+            'finished': 'fas fa-check'
+        };
+        return icons[status] || 'fas fa-circle';
     }
 
     // Modal Management
@@ -581,6 +1138,26 @@ function closeTaskDetailModal() {
     taskManager.closeTaskDetailModal();
 }
 
+function openArchiveModal() {
+    taskManager.openArchiveModal();
+}
+
+function closeArchiveModal() {
+    taskManager.closeArchiveModal();
+}
+
+function closeEditTaskModal() {
+    taskManager.closeEditTaskModal();
+}
+
+function openUserTasksModal() {
+    taskManager.openUserTasksModal();
+}
+
+function closeUserTasksModal() {
+    taskManager.closeUserTasksModal();
+}
+
 // Initialize the application
 let taskManager;
 
@@ -617,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskManager.renderTasks();
         taskManager.updateTaskCounts();
         taskManager.populateAuthorFilter();
+        taskManager.populateMonthFilter();
     }
 });
 

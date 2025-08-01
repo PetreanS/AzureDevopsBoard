@@ -17,18 +17,13 @@
             </div>
             <nav class="nav-menu">
                 <a href="#" class="nav-item active">Repos</a>
-                <a href="#" class="nav-item">Boards</a>
-                <a href="#" class="nav-item">Pipelines</a>
-                <a href="#" class="nav-item">Test Plans</a>
+                <a href="#" class="nav-item" onclick="openUserTasksModal()">User Tasks</a>
             </nav>
         </div>
         <div class="header-right">
             <button class="btn-primary" onclick="openTaskModal()">
                 <i class="fas fa-plus"></i> New Task
             </button>
-            <div class="user-profile">
-                <i class="fas fa-user-circle"></i>
-            </div>
         </div>
     </header>
 
@@ -41,14 +36,7 @@
                 <span>Task Management</span>
             </div>
         </div>
-        <div class="sidebar-section">
-            <h3>Quick Actions</h3>
-            <ul class="sidebar-menu">
-                <li><a href="#"><i class="fas fa-tasks"></i> All Tasks</a></li>
-                <li><a href="#"><i class="fas fa-clock"></i> Recent</a></li>
-                <li><a href="#"><i class="fas fa-user"></i> Assigned to me</a></li>
-            </ul>
-        </div>
+
     </aside>
 
     <!-- Main Content -->
@@ -60,9 +48,15 @@
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Search tasks..." id="searchInput">
                 </div>
+                <select id="filterMonth" class="filter-select">
+                    <option value="">All Months</option>
+                </select>
                 <select id="filterAuthor" class="filter-select">
                     <option value="">All Authors</option>
                 </select>
+                <button class="btn-secondary" onclick="openArchiveModal()" title="View Archive">
+                    <i class="fas fa-archive"></i> Archive
+                </button>
             </div>
         </div>
 
@@ -167,6 +161,122 @@
             </div>
             <div class="modal-body" id="taskDetailContent">
                 <!-- Task details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeTaskDetailModal()">Close</button>
+                <button type="button" class="btn-primary" id="editTaskBtn" onclick="taskManager.openEditModal()">
+                    <i class="fas fa-edit"></i> Edit Task
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+                <button class="modal-close" onclick="closeEditTaskModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editTaskForm" class="modal-body">
+                <div class="form-group">
+                    <label for="editTaskTitle">Title *</label>
+                    <input type="text" id="editTaskTitle" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTaskDescription">Description</label>
+                    <textarea id="editTaskDescription" name="description" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTaskAuthor">Author *</label>
+                    <input type="text" id="editTaskAuthor" name="author" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTaskPriority">Priority</label>
+                    <select id="editTaskPriority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTaskFiles">Add New Attachments</label>
+                    <div class="file-upload-area" onclick="document.getElementById('editTaskFiles').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload files or drag and drop</p>
+                        <p class="file-types">All file types supported</p>
+                    </div>
+                    <input type="file" id="editTaskFiles" name="files" multiple hidden>
+                    <div id="editFileList" class="file-list"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Attachments</label>
+                    <div id="currentAttachments" class="current-attachments">
+                        <!-- Current attachments will be listed here -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeEditTaskModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Archive Modal -->
+    <div id="archiveModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Task Archive</h2>
+                <button class="modal-close" onclick="closeArchiveModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="archive-controls">
+                    <select id="archiveMonthFilter" class="filter-select">
+                        <option value="">All Months</option>
+                    </select>
+                    <select id="archiveAuthorFilter" class="filter-select">
+                        <option value="">All Authors</option>
+                    </select>
+                    <input type="text" placeholder="Search archived tasks..." id="archiveSearchInput" class="search-box">
+                </div>
+                <div id="archiveContent" class="archive-content">
+                    <!-- Archived tasks will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Tasks Modal -->
+    <div id="userTasksModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>User Tasks Overview</h2>
+                <button class="modal-close" onclick="closeUserTasksModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="user-selection">
+                    <label for="userSelect">Select User:</label>
+                    <select id="userSelect" class="filter-select">
+                        <option value="">Choose a user...</option>
+                    </select>
+                </div>
+                <div id="userTasksContent" class="user-tasks-content">
+                    <!-- User tasks will be populated here -->
+                </div>
             </div>
         </div>
     </div>
